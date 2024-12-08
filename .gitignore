@@ -1,3 +1,9 @@
+# to not push config
+config.py
+# do not push generated files
+watchlist.txt
+hach_*.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
