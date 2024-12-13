@@ -5,6 +5,6 @@ class TelegramNotifier:
         self.bot = Bot(token=token)
         self.chat_id = chat_id
 
-    def send_message(self, message):
+    async def send_message(self, message):
         """Send a message to the Telegram chat."""
-        self.bot.send_message(chat_id=self.chat_id, text=message)
+        await self.bot.send_message(chat_id=self.chat_id, text=message)

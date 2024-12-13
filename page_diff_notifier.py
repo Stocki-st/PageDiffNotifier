@@ -1,9 +1,8 @@
 import requests
 import hashlib
 import os
-import time
 import asyncio
-
+import signal
 from telegram_bot import TelegramNotifier
 from config import TELEGRAM_BOT_TOKEN, CHAT_ID
 
@@ -37,13 +36,10 @@ async def check_website_change(url, hash_file, notifier):
     elif current_hash != previous_hash:
         message = f"The website {url} has changed!"
         print(message)
-        notifier.send_message(message) # Send message via Telegram
+        await notifier.send_message(message)
         save_current_hash(hash_file, current_hash)
     else:
         print(f"No changes detected for {url}.")
-        message = f"The website {url} not changed!"
-        print(message)
-        notifier.send_message(message) # Send message via Telegram
 
 def load_watchlist(file_path):
     if os.path.exists(file_path):
@@ -81,20 +77,39 @@ async def check_all_websites(watchlist_file, notifier):
         await check_website_change(url, hash_file_path, notifier)
 
 async def main():
-
     watchlist_file = 'watchlist.txt'  # File to store the list of websites to watch
     notifier = TelegramNotifier(TELEGRAM_BOT_TOKEN, CHAT_ID)  
- 
+
     add_watcher(watchlist_file, 'https://orf.at')
-
-    # Remove a website from watch
-    # remove_watcher(watchlist_file, 'https://example.com')
-
-    while True:
-        print("Checking for website changes...")
-        await check_all_websites(watchlist_file, notifier)
-        print("Waiting for 10 minutes before the next check...")
-        await asyncio.sleep(600)  # Sleep for 600 seconds (10 minutes)
+    message = f"Page Diff notifier started!"
+    await notifier.send_message(message)
+    
+    try:
+        while True:
+            print("Checking for website changes...")
+            await check_all_websites(watchlist_file, notifier)
+            print("Waiting for 10 minutes before the next check...")
+            await asyncio.sleep(600)  # Sleep for 600 seconds (10 minutes)
+    except asyncio.CancelledError:
+        print("Main loop cancelled, shutting down...")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    def handle_sigint():
+        print("SIGINT received, shutting down gracefully...")
+        for task in asyncio.all_tasks():
+            task.cancel()
+
+    signal.signal(signal.SIGINT, lambda *args: handle_sigint())
+
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("Script interrupted by user, shutting down...")
+    except asyncio.CancelledError:
+        print("Asyncio tasks cancelled.")
+    except RuntimeError as e:
+        print(f"Runtime error encountered: {e}")
+    finally:
+        print("Cleanup completed.")
