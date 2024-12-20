@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Watcher</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-left">Website Watcher</h1>
+         <!-- Description Section -->
+         <p class="text-left text-muted">Simply add the website you would like to watch. On change, you will be notified via Telegram.</p>
+        <h3>Add a Website to Watch</h3>
+        <form action="/add" method="post" class="form-inline mb-3">
+            <input type="text" name="url" class="form-control mr-2" placeholder="Enter website URL" required>
+            <button type="submit" class="btn btn-primary">Add</button>
+        </form>
+
+        <h3>Current Watchlist</h3>
+        <ul class="list-group">
+            {% for website in watchlist %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ website }}
+                    <form action="/remove/{{ website | url_encode }}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Bootstrap JS and dependencies (optional) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
